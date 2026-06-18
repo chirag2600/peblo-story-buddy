@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 
-/// Custom-painted Peblo Buddy placeholder — lightweight, no image assets.
+/// Custom-painted StorySpark buddy — lightweight, no image assets.
 class AiBuddyWidget extends StatelessWidget {
   const AiBuddyWidget({
     super.key,
@@ -36,13 +36,11 @@ class _BuddyPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height * 0.55);
     final radius = size.width * 0.38;
 
-    // Soft glow behind buddy
     final glowPaint = Paint()
       ..color = PebloColors.purple.withValues(alpha: 0.15)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     canvas.drawCircle(center, radius + 8, glowPaint);
 
-    // Body
     final bodyPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
@@ -51,7 +49,6 @@ class _BuddyPainter extends CustomPainter {
       ).createShader(Rect.fromCircle(center: center, radius: radius));
     canvas.drawCircle(center, radius, bodyPaint);
 
-    // Antenna
     final antennaPaint = Paint()
       ..color = PebloColors.orange
       ..strokeWidth = 3
@@ -64,41 +61,25 @@ class _BuddyPainter extends CustomPainter {
     );
     canvas.drawCircle(antennaTop, 5, Paint()..color = PebloColors.orangeLight);
 
-    // Eyes
     final eyeY = center.dy - radius * 0.15;
     final eyeOffset = radius * 0.28;
-    final eyePaint = Paint()..color = Colors.white;
-    final pupilPaint = Paint()..color = PebloColors.textDark;
 
     if (isHappy) {
-      // Happy arc eyes
-      final leftEye = Path()
-        ..addArc(
-          Rect.fromCenter(
-            center: Offset(center.dx - eyeOffset, eyeY),
-            width: 14,
-            height: 8,
-          ),
-          0,
-          3.14,
-        );
-      final rightEye = Path()
-        ..addArc(
-          Rect.fromCenter(
-            center: Offset(center.dx + eyeOffset, eyeY),
-            width: 14,
-            height: 8,
-          ),
-          0,
-          3.14,
-        );
       final smilePaint = Paint()
         ..color = Colors.white
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.5
         ..strokeCap = StrokeCap.round;
-      canvas.drawPath(leftEye, smilePaint);
-      canvas.drawPath(rightEye, smilePaint);
+
+      for (final dx in [center.dx - eyeOffset, center.dx + eyeOffset]) {
+        final eye = Path()
+          ..addArc(
+            Rect.fromCenter(center: Offset(dx, eyeY), width: 14, height: 8),
+            0,
+            3.14,
+          );
+        canvas.drawPath(eye, smilePaint);
+      }
 
       final smile = Path()
         ..addArc(
@@ -112,12 +93,13 @@ class _BuddyPainter extends CustomPainter {
         );
       canvas.drawPath(smile, smilePaint);
     } else {
+      final eyePaint = Paint()..color = Colors.white;
+      final pupilPaint = Paint()..color = PebloColors.textDark;
       canvas.drawCircle(Offset(center.dx - eyeOffset, eyeY), 8, eyePaint);
       canvas.drawCircle(Offset(center.dx + eyeOffset, eyeY), 8, eyePaint);
       canvas.drawCircle(Offset(center.dx - eyeOffset, eyeY), 4, pupilPaint);
       canvas.drawCircle(Offset(center.dx + eyeOffset, eyeY), 4, pupilPaint);
 
-      // Mouth — open when speaking
       if (isSpeaking) {
         canvas.drawOval(
           Rect.fromCenter(
@@ -136,7 +118,6 @@ class _BuddyPainter extends CustomPainter {
       }
     }
 
-    // Cheek blush
     final blush = Paint()..color = PebloColors.orange.withValues(alpha: 0.35);
     canvas.drawCircle(
       Offset(center.dx - radius * 0.55, center.dy + radius * 0.1),

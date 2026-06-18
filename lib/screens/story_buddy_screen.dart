@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/constants/app_branding.dart';
 import '../core/theme/app_theme.dart';
 import '../data/story_content.dart';
 import '../providers/story_buddy_provider.dart';
 import '../widgets/ai_buddy_widget.dart';
 import '../widgets/quiz_widget.dart';
 import '../widgets/shake_wrapper.dart';
+import '../widgets/story_playback_controls.dart';
+import '../widgets/story_card.dart';
 import '../widgets/success_overlay.dart';
 
 class StoryBuddyScreen extends ConsumerWidget {
@@ -28,7 +31,7 @@ class StoryBuddyScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   Text(
-                    'Peblo Story Buddy',
+                    AppBranding.name,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w900,
                       color: PebloColors.purple,
@@ -36,22 +39,23 @@ class StoryBuddyScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Your AI reading companion',
+                    AppBranding.tagline,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: PebloColors.textMuted,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   AiBuddyWidget(
                     isHappy: state.buddyHappy,
                     isSpeaking: state.isSpeaking,
                   ),
                   const SizedBox(height: 24),
-                  _ReadStoryButton(
-                    isLoading: state.isLoading,
-                    isSpeaking: state.isSpeaking,
-                    enabled: state.canReadStory,
-                    onPressed: notifier.readStory,
+                  StoryPlaybackControls(
+                    ttsStatus: state.ttsStatus,
+                    onRead: notifier.readStory,
+                    onPause: notifier.pauseStory,
+                    onResume: notifier.resumeStory,
+                    onStop: notifier.stopStory,
                   ),
                   if (state.hasError && state.errorMessage != null) ...[
                     const SizedBox(height: 12),
@@ -61,7 +65,11 @@ class StoryBuddyScreen extends ConsumerWidget {
                     ),
                   ],
                   const SizedBox(height: 20),
-                  _StoryCard(text: StoryContent.storyText),
+                  StoryCard(
+                    story: StoryContent.story,
+                    isActive: state.isNarrating,
+                    isPaused: state.isPaused,
+                  ),
                   const SizedBox(height: 20),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
@@ -142,128 +150,6 @@ class _BubblePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _ReadStoryButton extends StatelessWidget {
-  const _ReadStoryButton({
-    required this.isLoading,
-    required this.isSpeaking,
-    required this.enabled,
-    required this.onPressed,
-  });
-
-  final bool isLoading;
-  final bool isSpeaking;
-  final bool enabled;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = isLoading
-        ? 'Getting ready...'
-        : isSpeaking
-            ? 'Reading...'
-            : 'Read Me a Story';
-
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: enabled ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: PebloColors.orange,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: PebloColors.orange.withValues(alpha: 0.5),
-          elevation: 4,
-          shadowColor: PebloColors.orange.withValues(alpha: 0.4),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading || isSpeaking)
-              const Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: Colors.white,
-                  ),
-                ),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: Icon(Icons.auto_stories_rounded, size: 22),
-              ),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StoryCard extends StatelessWidget {
-  const _StoryCard({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: PebloColors.cardWhite,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PebloColors.sky.withValues(alpha: 0.4)),
-        boxShadow: [
-          BoxShadow(
-            color: PebloColors.purple.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.menu_book_rounded, color: PebloColors.purple, size: 20),
-              const SizedBox(width: 6),
-              Text(
-                'Story Time',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: PebloColors.purple,
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  height: 1.55,
-                  fontSize: 17,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _QuizCard extends StatelessWidget {

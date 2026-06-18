@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:peblo_story_buddy/data/story_content.dart';
-import 'package:peblo_story_buddy/models/quiz_model.dart';
+import 'package:story_spark/data/story_content.dart';
+import 'package:story_spark/models/quiz_model.dart';
 
 void main() {
   group('QuizModel', () {

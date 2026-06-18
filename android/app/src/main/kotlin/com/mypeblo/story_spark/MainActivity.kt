@@ -1,4 +1,4 @@
-package com.mypeblo.peblo_story_buddy
+package com.mypeblo.story_spark
 
 import io.flutter.embedding.android.FlutterActivity
 

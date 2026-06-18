@@ -29,6 +29,8 @@ class StoryBuddyState {
 
   bool get isLoading => ttsStatus == TtsStatus.preparing;
   bool get isSpeaking => ttsStatus == TtsStatus.speaking;
+  bool get isPaused => ttsStatus == TtsStatus.paused;
+  bool get isNarrating => isSpeaking || isPaused || isLoading;
   bool get hasError => ttsStatus == TtsStatus.error;
   bool get canReadStory =>
       ttsStatus == TtsStatus.idle ||
@@ -99,6 +101,18 @@ class StoryBuddyNotifier extends StateNotifier<StoryBuddyState> {
     );
 
     await _tts.speak(StoryContent.storyText);
+  }
+
+  Future<void> pauseStory() => _tts.pause();
+
+  Future<void> resumeStory() => _tts.resume();
+
+  Future<void> stopStory() async {
+    state = state.copyWith(
+      quizPhase: QuizPhase.hidden,
+      buddyHappy: false,
+    );
+    await _tts.stop();
   }
 
   void retry() => readStory();
